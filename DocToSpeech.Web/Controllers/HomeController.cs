@@ -82,8 +82,8 @@ namespace DocToSpeech.Web.Controllers
 
 				using (var stream = formFile.OpenReadStream())
 				{
-					var storageCredentials = new StorageCredentials("doctospeechstorage", _config["storage:key"]);
-					var storageAccount = new CloudStorageAccount(storageCredentials, true);
+					var storageCredentials = new StorageCredentials(_config["storage:account"], _config["storage:key"]);
+                    var storageAccount = new CloudStorageAccount(storageCredentials, true);
 					var blobClient = storageAccount.CreateCloudBlobClient();
 					var containerClient = blobClient.GetContainerReference("uploads");
 
