@@ -37,14 +37,12 @@
 				<div class="row">
 					<div class="col-md">
 						<div class="list-group">
-							<div class="list-group-item list-group-item-action" style="font-weight: bold">Audio Transcript</div>
-							<a id="audioTranscriptLink" class="list-group-item list-group-item-action list-group-item-success"></a>
+							<div id="audioTranscriptLink" class="list-group-item list-group-item-action" style="font-weight: bold">Audio Transcript</div>
 						</div>
 					</div>
 					<div class="col-md">
 						<div class="list-group">
-							<div class="list-group-item list-group-item-action" style="font-weight: bold">Text Transcript</div>
-							<a id="textTranscriptLink" class="list-group-item list-group-item-action list-group-item-success"></a>
+							<div id="textTranscriptLink" class="list-group-item list-group-item-action" style="font-weight: bold">Text Transcript</div>
 						</div>
 					</div>
 				</div>
@@ -66,15 +64,15 @@
 				<div class="form-group">
 					<label class="control-label">PDF or image to upload</label>
 					<div class="custom-file">
-						<input type="file" name="uploadFiles" class="custom-file-input" id="customFile">
+						<input type="file" name="uploadFiles" class="custom-file-input" id="customFile" multiple>
 						<label class="custom-file-label" for="customFile">Choose file</label>
 					</div>
 				</div>
 				<div class="form-group">
 					<label asp-for="Voice" class="control-label">Choose a voice</label>
 					<select asp-for="Voice" class="form-control">
-						<option value="JessaNeural">Jessa (neural)</option>
-						<option value="GuyNeural">Guy (neural)</option>
+						<!-- <option value="JessaNeural">Jessa (neural)</option>
+						<option value="GuyNeural">Guy (neural)</option> -->
 						<option value="Jessa24kRUS">Jessa</option>
 						<option value="BenjaminRUS">Benjamin</option>
 						<option value="Guy24kRUS">Guy</option>
@@ -87,7 +85,7 @@
 				</div>
 				<div class="form-group">
 					<label class="control-label" for="volume">Volume</label>
-					<input type="range" id="volume" asp-for="Volume" class="form-control-range" min="-100" max="100" step="1" />
+					<input type="range" id="volume" asp-for="Volume" class="form-control-range" min="0" max="100" step="1" />
 				</div>
 				<div class="form-group">
 					<label asp-for="Pitch"` class="control-label">Pitch</label>
@@ -148,6 +146,7 @@
 
 <script src="~/lib/signalr/signalr.js"></script>
 <script lang="javascript">
+var documentCount = 0; 
 
 const connection = new signalR.HubConnectionBuilder()
     .withUrl("@ViewBag.ApiEndpoint")
@@ -159,36 +158,52 @@ connection.start().then(function () {
 });
 
 connection.on("newSpeechFile", (response) => {
-
-	console.log("Incoming new speech request:\n" + response);
+	documentCount++;
+	console.log("Incoming new speech request:\n" + JSON.stringify(response));
 	var urlParams = new URLSearchParams(window.location.search);
+	var requestIds = urlParams.getAll('requestId');
 
-	if(response.RequestId == urlParams.get('requestId')) {
+	if(requestIds.includes(response.RequestId)) {
 		const textLink = document.getElementById("textTranscriptLink");
 		const audioLink = document.getElementById("audioTranscriptLink");
 		const blobName = document.getElementById("blobLabel");
 
 		if(response.TranscriptBlobUrl)
-		{
-			textLink.textContent = "Download here";
-			textLink.href = response.TranscriptBlobUrl;
+        {
+            var newLink = document.createElement('a');
+			newLink.className = "list-group-item list-group-item-action list-group-item-success";
+            newLink.textContent = "Download here";
+            newLink.href = response.TranscriptBlobUrl;
+			$(newLink).insertAfter('#textTranscriptLink');
 		}
 		else {
-			textLink.textContent = "ERROR";
+			var newLink = document.createElement('div');
+			newLink.className = "list-group-item list-group-item-action list-group-item-danger";
+            newLink.textContent = "ERROR";
+			$(newLink).insertAfter('#textTranscriptLink');
 		}
 
 		if(response.SpeechAudioBlobUrl)
 		{
-			audioLink.textContent = "Download here";
-			audioLink.href = response.SpeechAudioBlobUrl;
+            var newLink = document.createElement('a');
+            newLink.className = "list-group-item list-group-item-action list-group-item-success";
+            newLink.textContent = "Download here";
+            newLink.href = response.SpeechAudioBlobUrl;
+            $(newLink).insertAfter('#audioTranscriptLink');
 		}
 		else {
-			audioLink.textContent = "ERROR";
+			var newLink = document.createElement('div');
+			newLink.className = "list-group-item list-group-item-action list-group-item-danger";
+            newLink.textContent = "ERROR";
+			$(newLink).insertAfter('#audioTranscriptLink');
 		}
 
 		blobName.textContent = response.Request.BlobName;
 		resultContainer.style.display = "block";
-		document.getElementById("convertingLabel").style.display = "none";
+		
+		if (documentCount === requestIds.length) {
+			document.getElementById("convertingLabel").style.display = "none";
+		}
 
 		if(response.ErrorMessage)
 		{

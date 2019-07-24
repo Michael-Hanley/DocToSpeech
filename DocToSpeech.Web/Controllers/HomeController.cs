@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -64,6 +65,7 @@ namespace DocToSpeech.Web.Controllers
 		{
 			var uploadSuccess = false;
 			string instanceId = null;
+			ArrayList instanceIds = new ArrayList();
 
 			if (!uploadFiles.Any(f => f.FileName.ToLower().EndsWith(".png")
 				|| f.FileName.ToLower().EndsWith(".jpg")
@@ -110,11 +112,12 @@ namespace DocToSpeech.Web.Controllers
 					var json = JsonConvert.SerializeObject(request);
 					var response = await client.PostAsync(url, new StringContent(json, Encoding.UTF8, "application/json"));
 					instanceId = await response.Content.ReadAsStringAsync();
+					instanceIds.Add(instanceId);
 				}
 			}
 
 			if (uploadSuccess)
-				return RedirectToAction("Index", new { requestId = instanceId });
+				return RedirectToAction("Index", new { requestId = instanceIds });
 			else
 				return View("UploadError");
 		}
