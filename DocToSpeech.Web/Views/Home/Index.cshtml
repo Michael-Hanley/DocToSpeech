@@ -35,14 +35,19 @@
 			<div id="resultContainer" class="container" style="display: none; padding: 0px">
 				<div style="font-size: 16px; margin: 20px 0px">Conversion complete for: <span id="blobLabel"></span></div>
 				<div class="row">
-					<div class="col-md">
+					<div class="col-xl">
 						<div class="list-group">
-							<div id="audioTranscriptLink" class="list-group-item list-group-item-action" style="font-weight: bold">Audio Transcript</div>
+							<div id="fileName" class="list-group-item list-group-item-action" style="font-weight: bold">File Name</div>
 						</div>
 					</div>
-					<div class="col-md">
+					<div class="col-sm">
 						<div class="list-group">
-							<div id="textTranscriptLink" class="list-group-item list-group-item-action" style="font-weight: bold">Text Transcript</div>
+							<div id="audioTranscriptLink" class="list-group-item list-group-item-action" style="font-weight: bold">Audio</div>
+						</div>
+					</div>
+					<div class="col-sm">
+						<div class="list-group">
+							<div id="textTranscriptLink" class="list-group-item list-group-item-action" style="font-weight: bold">Text</div>
 						</div>
 					</div>
 				</div>
@@ -167,12 +172,18 @@ connection.on("newSpeechFile", (response) => {
 		const textLink = document.getElementById("textTranscriptLink");
 		const audioLink = document.getElementById("audioTranscriptLink");
 		const blobName = document.getElementById("blobLabel");
+		const fileName = document.getElementById("fileName");
+
+		var newFile = document.createElement('div');
+		newFile.className = "list-group-item list-group-item-action file-name";
+		newFile.textContent = response.Request.BlobName;
+		$(newFile).insertAfter('#fileName');
 
 		if(response.TranscriptBlobUrl)
         {
             var newLink = document.createElement('a');
 			newLink.className = "list-group-item list-group-item-action list-group-item-success";
-            newLink.textContent = "Download here";
+            newLink.textContent = "Download";
             newLink.href = response.TranscriptBlobUrl;
 			$(newLink).insertAfter('#textTranscriptLink');
 		}
@@ -187,7 +198,7 @@ connection.on("newSpeechFile", (response) => {
 		{
             var newLink = document.createElement('a');
             newLink.className = "list-group-item list-group-item-action list-group-item-success";
-            newLink.textContent = "Download here";
+            newLink.textContent = "Download";
             newLink.href = response.SpeechAudioBlobUrl;
             $(newLink).insertAfter('#audioTranscriptLink');
 		}
@@ -249,5 +260,10 @@ $('#customFile').on('change',function(){
 	margin-left: auto;
 	margin-right: auto;	
 }
-
+.file-name {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	width: 300px;
+}
 </style>
